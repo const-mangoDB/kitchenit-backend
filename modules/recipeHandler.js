@@ -1,1 +1,2 @@
-// TODO: Add all CRUD operations for recipes and data manipulation of API returns
+const Recipe = require('../models/recipe');
+const getRecipeDetails = require('./getRecipeDetails');
