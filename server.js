@@ -36,7 +36,7 @@ app.get('/test', (request, response) => {
 app.get('/ingredients', ingredientHandler.getIngredients);
 
 // route to get ingredient dictionary
-app.get('/ingredients', getIngredientDictionary);
+app.get('/ingredients/dictionary', getIngredientDictionary);
 
 // route to add one ingredient
 app.post('/ingredients', ingredientHandler.postIngredient);
