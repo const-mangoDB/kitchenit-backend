@@ -1,7 +1,6 @@
 'use strict'
 
 const axios = require('axios');
-const {response} = require('express');
 
 function getRecipeDetails(req, res, next) {
 
@@ -9,8 +8,8 @@ function getRecipeDetails(req, res, next) {
     const searchURL = '';
 
     axios.get(searchURL)
-        .then(data => {
-            let formattedRecipeData = data.data.meals.map(element => new DetailedRecipe(element));
+        .then(resData => {
+            let formattedRecipeData = resData.data.meals.map(element => new DetailedRecipe(element));
             res.status(200).send(formattedRecipeData);
         })
         .catch(error => next(error));
@@ -28,7 +27,7 @@ function getRecipeDetails(req, res, next) {
         }
 
         instructionsToArray(data){
-            return (data.strInstructions.split("."));
+            return (data.strInstructions.split(".\s"));
         }
 
 
