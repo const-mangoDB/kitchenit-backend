@@ -8,11 +8,10 @@ const {Schema} = mongoose;
 // Creating schema layout
 const ingredientSchema = new Schema({
   name: String,
-  apiParamName: String,
   description: String,
   imageUrl: String,
-  quantity: Number,
-  unit: String,
+  // quantity: Number,
+  // unit: String,
   email: String
 });
 

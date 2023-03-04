@@ -35,13 +35,8 @@ function getIngredientDictionary(req, res, next) {
 class Ingredient {
   constructor(ingredient, baseUrl) {
     this.name = ingredient.strIngredient;
-    this.apiParamName = this.paramify(this.name);
     this.description = ingredient.strDescription;
     this.imageUrl = this.getImageUrl(this.name, baseUrl);
-  }
-
-  paramify (name) {
-    return name.toLowerCase().replace(/\s+/g, '_');
   }
 
   getImageUrl (name, baseUrl) {
