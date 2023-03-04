@@ -4,12 +4,11 @@ const axios = require('axios');
 const cache = require('./cache');
 
 async function getRecipeList(req, res, next){
-    const startTime = Date.now();
     // TODO: Set up req.body for ingredients
-    let ingredients = {
-        'Butter': true,
-        'Almond Extract': true,
-    };
+    const kitchenIngredients = ['Butter', 'Almond Extract', 'Oil'];
+    // Create a set with ingredients in it for filtering
+    const ingredientSet = new Set();
+    kitchenIngredients.forEach(ingredient => ingredientSet.add(ingredient));
 
     const CACHE_KEY = 'recipes';
     // We'll set the reset on the recipe list cache data to be every week
@@ -17,46 +16,40 @@ async function getRecipeList(req, res, next){
     if (cache[CACHE_KEY] && (Date.now() - cache[CACHE_KEY].timestamp < cacheLife)) {
         // Cache hit
         cache[CACHE_KEY].timestamp = Date.now();
-        const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, ingredients);
-        const timeElapsed = Date.now() - startTime;
-        console.log('getRecipeList time elapsed: ', `${timeElapsed} ms`);
+        const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, ingredientSet);
         res.status(200).send(filteredRecipeList);
     } else {
         // Cache miss
         cache[CACHE_KEY].timestamp = Date.now();
-        getFullRecipeList().then(fullRecipeList => {
+        getFullRecipeList(next).then(fullRecipeList => {
             cache[CACHE_KEY].data = fullRecipeList
-            const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, ingredients);
-            const timeElapsed = Date.now() - startTime;
-            console.log('getRecipeList time elapsed: ', `${timeElapsed} ms`);
+            const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, ingredientSet);
             res.status(200).send(filteredRecipeList);
         })
         .catch(err => next(err));
     }
 }
 
-async function getFullRecipeList() {
+async function getFullRecipeList(next) {
     try {
-        const startTime = Date.now();
-        const baseUrl = `https://themealdb.com/api/json/v2/${process.env.MEALDB_API_KEY}/search.php`;
+        const MEALDB_API_INGREDIENT_IMAGE_BASE_URL='https://themealdb.com/images/ingredients';
+        const MEALDB_API_RECIPES_BASE_URL = `https://themealdb.com/api/json/v2/${process.env.MEALDB_API_KEY}/search.php`;
         const fullRecipeList = [];
 
-        for (let i = 0; i < 26; i++) {
+        for (let i = 0; i < 2; i++) {
             const char = String.fromCharCode(97 + i);
-            let searchUrl = `${baseUrl}?f=${char}`;
+            let searchUrl = `${MEALDB_API_RECIPES_BASE_URL}?f=${char}`;
             let filteredRecipeList = await axios.get(searchUrl)
             .then(resData => {
                 if (resData.data.meals) {
-                    return resData.data.meals.map(element => new DetailedRecipe(element));
+                    return resData.data.meals.map(element => new DetailedRecipe(element, MEALDB_API_INGREDIENT_IMAGE_BASE_URL));
                 }
             });
             fullRecipeList.push(filteredRecipeList);
         }
 
         return await Promise.all(fullRecipeList).then((unsanitizedFullRecipeList) => {
-            const timeElapsed = Date.now() - startTime;
-            console.log('getFullRecipeList time elapsed: ', `${timeElapsed} ms`);
-            // Each promise returns an array that needs to be flattened. In addition, some promises will be null values if no recipes are found from that letter. These should be removed from the return array
+            // Each promise returns an array that needs to be flattened. In addition, some promises will be null/undefined values if no recipes are found from that letter. These should be removed from the return array
             const fullRecipeList = unsanitizedFullRecipeList.flat().filter((recipe) => recipe != null);
             return fullRecipeList;
         })
@@ -65,7 +58,7 @@ async function getFullRecipeList() {
 
 function getFilteredRecipeList(recipeList, kitchenIngredients) {
     const filteredRecipeScores = [];
-    // We want to stop iterating over the ingredients array in each recipe if we've reached the ingredient count
+    // We want to stop iterating over the ingredients array in each recipe if we've reached the kitchen ingredient count
     const numberOfKitchenIngredients = Object.keys(kitchenIngredients).length;
     
     recipeList.forEach((recipe, i) => {
@@ -75,7 +68,7 @@ function getFilteredRecipeList(recipeList, kitchenIngredients) {
         //Either loop through the whole ingredients array, or stop once we've hit the kitchen ingredient count
         for (j = 0; j< ingredients.length; j++) {
             let ingredient = ingredients[j].ingredientName;
-            if (ingredient in kitchenIngredients) {
+            if (kitchenIngredients.has(ingredient)) {
                 ingredientCount++;
             }
             if (ingredientCount === numberOfKitchenIngredients) {
@@ -103,14 +96,14 @@ function getFilteredRecipeList(recipeList, kitchenIngredients) {
 }
 
 class DetailedRecipe {
-    constructor(data) {
-        this.apiID = data.idMeal;
+    constructor(data, baseUrl) {
+        this.apiId = data.idMeal;
         this.name = data.strMeal;
         this.apiParamName = data.strMeal;
-        this.imageURL = data.strMealThumb;
+        this.imageUrl = data.strMealThumb;
         this.category = data.strArea;
         this.instructions = this.instructionsToArray(data);
-        this.ingredients = this.ingredientsToArray(data);
+        this.ingredients = this.ingredientsToArray(data, baseUrl);
     }
 
     instructionsToArray(data){
@@ -119,7 +112,7 @@ class DetailedRecipe {
     }
 
     // TODO: Split up quantity and unit
-    ingredientsToArray(data) {
+    ingredientsToArray(data, baseUrl) {
         let ingredientArray = [];
         for (let i = 1; i < 21; i++) {
 
@@ -128,10 +121,13 @@ class DetailedRecipe {
                 // let patternQuant = //
                 // let patternUnit = //
 
+                const name = this.titleCase(data[`strIngredient${i}`]);
+
                 const ingredient = {
-                    ingredientName: this.titleCase(data[`strIngredient${i}`]),
+                    ingredientName: name,
                     quantity: data[`strMeasure${i}`],
-                    unit: data[`strMeasure${i}`]
+                    unit: data[`strMeasure${i}`],
+                    imageUrl: this.getImageUrl(name, baseUrl)
                 }
 
                 ingredientArray.push(ingredient);
@@ -144,6 +140,10 @@ class DetailedRecipe {
     titleCase(string) {
         return string.replace(/(^\w{1})|(\s+\w{1})/g, char => char.toUpperCase());
     }
+
+    getImageUrl(name, baseUrl) {
+        return `${baseUrl}/${name.replace(/\s+/g, "%20")}.png`
+      }
 }
 
 module.exports = getRecipeList;

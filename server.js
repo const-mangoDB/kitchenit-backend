@@ -48,7 +48,7 @@ app.delete('/ingredients/:id', ingredientHandler.deleteIngredient);
 // app.get('/cookbook', recipeHandler.getIngredients);
 
 // route to get all recipes that match ingredients in kitchen
-app.get('/cookbook/list', getRecipeList);
+app.get('/recipes', getRecipeList);
 
 // route to add one recipe
 // app.post('/cookbook', recipeHandler.postIngredient);
