@@ -37,7 +37,7 @@ async function getFullRecipeList(next) {
     const fullRecipeList = [];
 
     // TODO: i is set to 2 letters for testing so as not to hammer the API, but once deployed we should have i < 26 to cycle the entire alphabet
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < process.env.MEALDB_API_FILTER_CALLS; i++) {
       const char = String.fromCharCode(97 + i);
       let searchUrl = `${MEALDB_API_RECIPES_BASE_URL}?f=${char}`;
       let filteredRecipeList = await axios.get(searchUrl)
@@ -99,9 +99,8 @@ function getFilteredRecipeList(recipeList, kitchenIngredients) {
 
 class DetailedRecipe {
   constructor(data, baseUrl) {
-    this.apiId = data.idMeal;
     this.name = data.strMeal;
-    this.apiParamName = data.strMeal;
+    this.apiId = data.idMeal;
     this.imageUrl = data.strMealThumb;
     this.category = data.strArea;
     this.instructions = this.instructionsToArray(data);
@@ -127,10 +126,13 @@ class DetailedRecipe {
 
         const ingredient = {
           ingredientName: name,
-          quantity: data[`strMeasure${i}`],
-          unit: data[`strMeasure${i}`],
+          measurement: data[`strMeasure${i}`],
+          // quantity: data[`strMeasure${i}`],
+          // unit: data[`strMeasure${i}`],
           imageUrl: this.getImageUrl(name, baseUrl)
         };
+
+        // STRETCH TODO: 'quantity' and 'unit' will be used in quantity stretch goal
 
         ingredientArray.push(ingredient);
       }

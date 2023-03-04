@@ -6,6 +6,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 // const verifyUser = require('./authorize');
 const ingredientHandler = require('./modules/ingredientHandler');
+const recipeHandler = require('./modules/recipeHandler');
 const getIngredientDictionary = require('./modules/getIngredientDictionary');
 const getRecipeList= require('./modules/getRecipeList');
 
@@ -45,15 +46,15 @@ app.post('/ingredients', ingredientHandler.postIngredient);
 app.delete('/ingredients/:id', ingredientHandler.deleteIngredient);
 
 // route to get all cookbook recipes
-// app.get('/cookbook', recipeHandler.getIngredients);
+app.get('/cookbook', recipeHandler.getFavoriteRecipes);
+
+// route to add one recipe
+app.post('/cookbook', recipeHandler.postFavoriteRecipe);
+
+// route to delete one recipe
+app.delete('/cookbook/:id', recipeHandler.deleteFavoriteRecipe);
 
 // route to get all recipes that match ingredients in kitchen
 app.get('/recipes', getRecipeList);
-
-// route to add one recipe
-// app.post('/cookbook', recipeHandler.postIngredient);
-
-// route to delete one recipe
-// app.delete('/cookbook/:id', recipeHandler.deleteIngredient);
 
 app.listen(PORT, () => console.log(`listening on ${PORT}`));

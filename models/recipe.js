@@ -9,18 +9,19 @@ const {Schema} = mongoose;
 const recipeSchema = new Schema({
   name: String,
   apiId: String,
-  apiParamName: String,
   category: String,
   instructions: [String],
   ingredients: [{
     ingredientName: String,
-    quantity: Number,
-    unit: String
+    measurement: String,
+    imageUrl: String
+    // quantity: Number,
+    // unit: String,
   }],
   email: String
 });
 
-// STRETCH: 'quantity' and 'unit' will be used in quantity stretch goal
+// STRETCH TODO: 'quantity' and 'unit' will be used in quantity stretch goal
 
 // Exporting model
 module.exports = mongoose.model('Recipe', recipeSchema);
