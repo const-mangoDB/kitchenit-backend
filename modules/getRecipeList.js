@@ -36,6 +36,7 @@ async function getFullRecipeList(next) {
         const MEALDB_API_RECIPES_BASE_URL = `https://themealdb.com/api/json/v2/${process.env.MEALDB_API_KEY}/search.php`;
         const fullRecipeList = [];
 
+        // TODO: i is set to 2 letters for testing so as not to hammer the API, but once deployed we should have i < 26 to cycle the entire alphabet
         for (let i = 0; i < 2; i++) {
             const char = String.fromCharCode(97 + i);
             let searchUrl = `${MEALDB_API_RECIPES_BASE_URL}?f=${char}`;
