@@ -1,5 +1,6 @@
-'use strict'
+'use strict';
 
 module.exports = {
   ingredients: {},
+  recipes: {}
 };

@@ -8,7 +8,6 @@ const mongoose = require('mongoose');
 const ingredientHandler = require('./modules/ingredientHandler');
 const getIngredientDictionary = require('./modules/getIngredientDictionary');
 const getRecipeList= require('./modules/getRecipeList');
-const recipeHandler = require('./modules/recipeHandler');
 
 const app = express();
 app.use(cors());
@@ -25,13 +24,13 @@ const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error'));
 
 // runs on open when the console log is connected
-db.once('open', () => console.log('Mongoose is connected'))
+db.once('open', () => console.log('Mongoose is connected'));
 
 app.get('/test', (request, response) => {
 
-  response.send('test request received')
+  response.send('test request received');
 
-})
+});
 
 // route to get all kitchen ingredients
 app.get('/ingredients', ingredientHandler.getIngredients);
@@ -49,7 +48,7 @@ app.delete('/ingredients/:id', ingredientHandler.deleteIngredient);
 // app.get('/cookbook', recipeHandler.getIngredients);
 
 // route to get all recipes that match ingredients in kitchen
-app.get('/cookbook/list', getRecipeList);
+app.get('/recipes', getRecipeList);
 
 // route to add one recipe
 // app.post('/cookbook', recipeHandler.postIngredient);
