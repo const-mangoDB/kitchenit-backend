@@ -2,4 +2,5 @@
 
 module.exports = {
   ingredients: {},
+  recipes: {}
 };

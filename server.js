@@ -8,7 +8,6 @@ const mongoose = require('mongoose');
 const ingredientHandler = require('./modules/ingredientHandler');
 const getIngredientDictionary = require('./modules/getIngredientDictionary');
 const getRecipeList= require('./modules/getRecipeList');
-const recipeHandler = require('./modules/recipeHandler');
 
 const app = express();
 app.use(cors());
