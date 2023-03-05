@@ -4,14 +4,14 @@ const axios = require('axios');
 const cache = require('./cache');
 
 async function getRecipeList(req, res, next){
-  // TODO: Set up req.body for ingredients
-  const kitchenIngredients = ['Butter', 'Almond Extract', 'Oil'];
+  const kitchenIngredients = req.body.ingredients;
   // Create a set with ingredients in it for filtering
   const ingredientSet = new Set();
   kitchenIngredients.forEach(ingredient => ingredientSet.add(ingredient));
 
   const CACHE_KEY = 'recipes';
   // We'll set the reset on the recipe list cache data to be every week
+
   const cacheLife = 604800000;
   if (cache[CACHE_KEY] && (Date.now() - cache[CACHE_KEY].timestamp < cacheLife)) {
     // Cache hit
