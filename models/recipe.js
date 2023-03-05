@@ -10,6 +10,7 @@ const recipeSchema = new Schema({
   name: String,
   apiId: String,
   category: String,
+  imageUrl: String,
   instructions: [String],
   ingredients: [{
     ingredientName: String,
