@@ -5,10 +5,10 @@ const cache = require('./cache');
 
 async function getRecipeList(req, res, next){
   const kitchenIngredients = req.body.ingredients;
+  const ingredientNumber = kitchenIngredients.length;
   // Create a set with ingredients in it for filtering
   const ingredientSet = new Set();
   kitchenIngredients.forEach(ingredient => ingredientSet.add(ingredient));
-
   const CACHE_KEY = 'recipes';
   // We'll set the reset on the recipe list cache data to be every week
 
@@ -16,14 +16,14 @@ async function getRecipeList(req, res, next){
   if (cache[CACHE_KEY] && (Date.now() - cache[CACHE_KEY].timestamp < cacheLife)) {
     // Cache hit
     cache[CACHE_KEY].timestamp = Date.now();
-    const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, ingredientSet);
+    const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, ingredientSet, ingredientNumber);
     res.status(200).send(filteredRecipeList);
   } else {
     // Cache miss
     cache[CACHE_KEY].timestamp = Date.now();
     getFullRecipeList(next).then(fullRecipeList => {
       cache[CACHE_KEY].data = fullRecipeList;
-      const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, ingredientSet);
+      const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, ingredientSet, ingredientNumber);
       res.status(200).send(filteredRecipeList);
     })
       .catch(err => next(err));
@@ -58,17 +58,14 @@ async function getFullRecipeList(next) {
   } catch(err) {next(err);}
 }
 
-function getFilteredRecipeList(recipeList, kitchenIngredients) {
+function getFilteredRecipeList(recipeList, kitchenIngredients, numberOfKitchenIngredients) {
   const filteredRecipeScores = [];
   // We want to stop iterating over the ingredients array in each recipe if we've reached the kitchen ingredient count
-  const numberOfKitchenIngredients = Object.keys(kitchenIngredients).length;
-
   recipeList.forEach((recipe, i) => {
     let ingredients = recipe.ingredients;
     let ingredientCount = 0;
-    let j = 0;
     //Either loop through the whole ingredients array, or stop once we've hit the kitchen ingredient count
-    for (j = 0; j< ingredients.length; j++) {
+    for (let j = 0; j < ingredients.length; j++) {
       let ingredient = ingredients[j].ingredientName;
       if (kitchenIngredients.has(ingredient)) {
         ingredientCount++;
@@ -77,7 +74,6 @@ function getFilteredRecipeList(recipeList, kitchenIngredients) {
         break;
       }
     }
-
     //Only identify a recipe that has any kitchen ingredients
     if (ingredientCount > 0) {
       // We want to sort by a score expressed as a % of the total ingredients in the recipe already contained in the kitchen.
