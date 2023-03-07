@@ -4,7 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-// const verifyUser = require('./authorize');
+const verifyUser = require('./authorize');
 const ingredientHandler = require('./modules/ingredientHandler');
 const recipeHandler = require('./modules/recipeHandler');
 const getIngredientDictionary = require('./modules/getIngredientDictionary');
@@ -13,7 +13,11 @@ const getRecipeList= require('./modules/getRecipeList');
 const app = express();
 app.use(cors());
 app.use(express.json());
-// app.use(verifyUser);
+
+// route to get ingredient dictionary
+app.get('/ingredients/dictionary', getIngredientDictionary);
+
+app.use(verifyUser);
 
 const PORT = process.env.PORT || 3002;
 
@@ -36,9 +40,6 @@ app.get('/test', (request, response) => {
 // route to get all kitchen ingredients
 app.get('/ingredients', ingredientHandler.getIngredients);
 
-// route to get ingredient dictionary
-app.get('/ingredients/dictionary', getIngredientDictionary);
-
 // route to add one ingredient
 app.post('/ingredients', ingredientHandler.postIngredient);
 
@@ -55,6 +56,6 @@ app.post('/cookbook', recipeHandler.postFavoriteRecipe);
 app.delete('/cookbook/:id', recipeHandler.deleteFavoriteRecipe);
 
 // route to get all recipes that match ingredients in kitchen
-app.post('/recipes', getRecipeList);
+app.get('/recipes', getRecipeList);
 
 app.listen(PORT, () => console.log(`listening on ${PORT}`));

@@ -2,32 +2,38 @@
 
 const axios = require('axios');
 const cache = require('./cache');
+const Ingredient = require('../models/ingredient');
 
 async function getRecipeList(req, res, next){
-  const kitchenIngredients = req.body.ingredients;
-  const ingredientNumber = kitchenIngredients.length;
-  // Create a set with ingredients in it for filtering
-  const ingredientSet = new Set();
-  kitchenIngredients.forEach(ingredient => ingredientSet.add(ingredient));
-  const CACHE_KEY = 'recipes';
-  // We'll set the reset on the recipe list cache data to be every week
-
-  const cacheLife = 604800000;
-  if (cache[CACHE_KEY] && (Date.now() - cache[CACHE_KEY].timestamp < cacheLife)) {
+  // We will get all the ingredients that belong to the user and then do the filtering.
+  getKitchenIngredients(req, res, next).then(kitchenIngredients => {
+    const CACHE_KEY = 'recipes';
+    // We'll set the reset on the recipe list cache data to be every week
+    const cacheLife = 604800000;
+    if (cache[CACHE_KEY] && (Date.now() - cache[CACHE_KEY].timestamp < cacheLife)) {
     // Cache hit
-    cache[CACHE_KEY].timestamp = Date.now();
-    const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, ingredientSet, ingredientNumber);
-    res.status(200).send(filteredRecipeList);
-  } else {
-    // Cache miss
-    cache[CACHE_KEY].timestamp = Date.now();
-    getFullRecipeList(next).then(fullRecipeList => {
-      cache[CACHE_KEY].data = fullRecipeList;
-      const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, ingredientSet, ingredientNumber);
+      cache[CACHE_KEY].timestamp = Date.now();
+      const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, kitchenIngredients);
       res.status(200).send(filteredRecipeList);
-    })
-      .catch(err => next(err));
-  }
+    } else {
+    // Cache miss
+      cache[CACHE_KEY].timestamp = Date.now();
+      getFullRecipeList(next).then(fullRecipeList => {
+        cache[CACHE_KEY].data = fullRecipeList;
+        const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, kitchenIngredients);
+        res.status(200).send(filteredRecipeList);
+      })
+        .catch(err => next(err));
+    }
+  });
+}
+
+async function getKitchenIngredients(req, res, next) {
+  try {
+    let queryObject = {email: req.user.email};
+    const ingredients = await Ingredient.find(queryObject);
+    return ingredients;
+  } catch(err) { next(err.message); }
 }
 
 async function getFullRecipeList(next) {
@@ -58,7 +64,11 @@ async function getFullRecipeList(next) {
   } catch(err) {next(err);}
 }
 
-function getFilteredRecipeList(recipeList, kitchenIngredients, numberOfKitchenIngredients) {
+function getFilteredRecipeList(recipeList, kitchenIngredients) {
+  const numberOfKitchenIngredients = kitchenIngredients.length;
+  // Create a set with ingredients in it for filtering
+  const ingredientSet = new Set();
+  kitchenIngredients.forEach(ingredient => ingredientSet.add(ingredient.name));
   const filteredRecipeScores = [];
   // We want to stop iterating over the ingredients array in each recipe if we've reached the kitchen ingredient count
   recipeList.forEach((recipe, i) => {
@@ -67,7 +77,7 @@ function getFilteredRecipeList(recipeList, kitchenIngredients, numberOfKitchenIn
     //Either loop through the whole ingredients array, or stop once we've hit the kitchen ingredient count
     for (let j = 0; j < ingredients.length; j++) {
       let ingredient = ingredients[j].ingredientName;
-      if (kitchenIngredients.has(ingredient)) {
+      if (ingredientSet.has(ingredient)) {
         ingredientCount++;
       }
       if (ingredientCount === numberOfKitchenIngredients) {
@@ -108,15 +118,11 @@ class DetailedRecipe {
     return data.strInstructions.split(regex);
   }
 
-  // TODO: Split up quantity and unit
   ingredientsToArray(data, baseUrl) {
     let ingredientArray = [];
     for (let i = 1; i < 21; i++) {
 
       if (data[`strIngredient${i}`]) {
-
-        // let patternQuant = //
-        // let patternUnit = //
 
         const name = this.titleCase(data[`strIngredient${i}`]);
 
@@ -127,8 +133,6 @@ class DetailedRecipe {
           // unit: data[`strMeasure${i}`],
           imageUrl: this.getImageUrl(name, baseUrl)
         };
-
-        // STRETCH TODO: 'quantity' and 'unit' will be used in quantity stretch goal
 
         ingredientArray.push(ingredient);
       }
