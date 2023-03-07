@@ -16,13 +16,9 @@ const recipeSchema = new Schema({
     ingredientName: String,
     measurement: String,
     imageUrl: String
-    // quantity: Number,
-    // unit: String,
   }],
   email: String
 });
-
-// STRETCH TODO: 'quantity' and 'unit' will be used in quantity stretch goal
 
 // Exporting model
 module.exports = mongoose.model('Recipe', recipeSchema);
