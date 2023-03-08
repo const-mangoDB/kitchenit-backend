@@ -13,8 +13,8 @@ const getRecipeList= require('./modules/getRecipeList');
 const app = express();
 
 const corsOptions ={
-  origin: ['http://localhost:3000', 'https://kitchen-it.netlify.app'],
-  credentials:true, //access-control-allow-credentials:true
+  origin: ['*', 'http://localhost:3000', 'https://kitchen-it.netlify.app'],
+  credentials:true,
   optionSuccessStatus:200
 };
 
