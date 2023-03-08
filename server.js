@@ -38,9 +38,9 @@ db.on('error', console.error.bind(console, 'connection error'));
 // runs on open when the console log is connected
 db.once('open', () => console.log('Mongoose is connected'));
 
-app.get('/test', (request, response) => {
+app.get('/', (request, response) => {
 
-  response.send('test request received');
+  response.send('Hi!');
 
 });
 
