@@ -21,6 +21,12 @@ const corsOptions ={
 app.use(cors(corsOptions));
 app.use(express.json());
 
+app.get('/', (request, response) => {
+
+  response.send('Hi!');
+
+});
+
 // route to get ingredient dictionary
 app.get('/ingredients/dictionary', getIngredientDictionary);
 
@@ -38,11 +44,6 @@ db.on('error', console.error.bind(console, 'connection error'));
 // runs on open when the console log is connected
 db.once('open', () => console.log('Mongoose is connected'));
 
-app.get('/', (request, response) => {
-
-  response.send('Hi!');
-
-});
 
 // route to get all kitchen ingredients
 app.get('/ingredients', ingredientHandler.getIngredients);
