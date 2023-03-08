@@ -13,11 +13,11 @@ const getRecipeList= require('./modules/getRecipeList');
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(verifyUser);
 
 // route to get ingredient dictionary
 app.get('/ingredients/dictionary', getIngredientDictionary);
 
-app.use(verifyUser);
 
 const PORT = process.env.PORT || 3002;
 
