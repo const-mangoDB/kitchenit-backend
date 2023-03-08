@@ -18,6 +18,10 @@ const corsOptions ={
   optionSuccessStatus:200
 };
 
+app.use((req, res, next) => {
+  console.log(req.url,req.get('User-Agent'),new Date(Date.now()).toISOString());
+});
+
 app.use(cors(corsOptions));
 app.use(express.json());
 
