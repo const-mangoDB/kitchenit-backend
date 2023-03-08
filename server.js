@@ -65,4 +65,11 @@ app.delete('/cookbook/:id', recipeHandler.deleteFavoriteRecipe);
 // route to get all recipes that match ingredients in kitchen
 app.get('/recipes', getRecipeList);
 
+app.use((err, req, res, next) => {
+  console.log(err);
+  res.status(500).send(err);
+});
+
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
+
+
