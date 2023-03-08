@@ -11,13 +11,20 @@ const getIngredientDictionary = require('./modules/getIngredientDictionary');
 const getRecipeList= require('./modules/getRecipeList');
 
 const app = express();
-app.use(cors());
+
+const corsOptions ={
+  origin: ['http://localhost:3000', 'https://kitchen-it.netlify.app'],
+  credentials:true, //access-control-allow-credentials:true
+  optionSuccessStatus:200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(verifyUser);
 
 // route to get ingredient dictionary
 app.get('/ingredients/dictionary', getIngredientDictionary);
 
+app.use(verifyUser);
 
 const PORT = process.env.PORT || 3002;
 
