@@ -6,7 +6,6 @@ const cache = require('./cache');
 function getIngredientDictionary(req, res, next) {
   const MEALDB_API_INGREDIENTS_LIST_URL = `https://themealdb.com/api/json/v2/${process.env.MEALDB_API_KEY}/list.php?i=list`;
   const MEALDB_API_INGREDIENT_IMAGE_BASE_URL='https://themealdb.com/images/ingredients';
-
   const CACHE_KEY = 'ingredients';
   // We'll set the reset on the ingredient dictionary cache data to be a day
   const cacheLife = 86400000;
