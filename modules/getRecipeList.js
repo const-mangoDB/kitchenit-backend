@@ -14,13 +14,16 @@ async function getRecipeList(req, res, next){
     // Cache hit
       cache[CACHE_KEY].timestamp = Date.now();
       const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, kitchenIngredients);
+      console.log('Cache Hit');
       res.status(200).send(filteredRecipeList);
     } else {
     // Cache miss
       cache[CACHE_KEY].timestamp = Date.now();
       getFullRecipeList(next).then(fullRecipeList => {
         cache[CACHE_KEY].data = fullRecipeList;
+
         const filteredRecipeList = getFilteredRecipeList(cache[CACHE_KEY].data, kitchenIngredients);
+        console.log('Cache Miss');
         res.status(200).send(filteredRecipeList);
       })
         .catch(err => next(err));

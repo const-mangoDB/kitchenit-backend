@@ -35,7 +35,7 @@ ingredientHandler.deleteIngredient = function (req, res, next) {
               res.status(404).send('Cannot find ingredient.');
             }
             else {
-              res.status(200).send(`Deleted ingredient ${deletedIngredient.name}`);
+              res.status(200).send(`Deleted ingredient ${ingredient.name}`);
             }
           });
       }
